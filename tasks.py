@@ -44,6 +44,10 @@ http://{public_fqdn}/ >> {override_fn}".format(**envs), pty=True)
 {dburl} >> {override_fn}".format(**envs), pty=True)
     ctx.run("echo export GEODATABASE_URL=\
 {geodburl} >> {override_fn}".format(**envs), pty=True)
+    ctx.run("echo export ASYNC_SIGNALS=\
+True >> {override_fn}".format(**envs), pty=True)
+    ctx.run("echo export BROKER_URL=\
+amqp://guest:guest@rabbitmq:5672/ >> {override_fn}".format(**envs), pty=True)
     ctx.run("source $HOME/.override_env", pty=True)
     print "****************************final**********************************"
     ctx.run("env", pty=True)
@@ -91,16 +95,19 @@ address {0}".format(ip))
 
 def _container_exposed_port(component, instname):
     client = docker.from_env()
-    ports_dict = json.dumps(
-        [c.attrs['Config']['ExposedPorts'] for c in client.containers.list(
-            filters={
-                'label': 'org.geonode.component={0}'.format(component),
-                'status': 'running'
-            }
-        ) if '{0}'.format(instname) in c.name][0]
-    )
-    for key in json.loads(ports_dict):
-        port = re.split('/tcp', key)[0]
+    try:
+        ports_dict = json.dumps(
+            [c.attrs['Config']['ExposedPorts'] for c in client.containers.list(
+                filters={
+                    'label': 'org.geonode.component={0}'.format(component),
+                    'status': 'running'
+                }
+            ) if '{0}'.format(instname) in c.name][0]
+        )
+        for key in json.loads(ports_dict):
+            port = re.split('/tcp', key)[0]
+    except:
+        port = 80
     return port
 
 
