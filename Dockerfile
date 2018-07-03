@@ -34,7 +34,8 @@ RUN pip install --upgrade pip
 RUN pip install GDAL==1.10 --global-option=build_ext --global-option="-I/usr/include/gdal"
 
 # install shallow clone of geonode master branch
-RUN git clone --depth=1 git://github.com/GeoNode/geonode.git --branch master /usr/src/geonode
+ARG GEONODE_BRANCH=master
+RUN git clone --depth=1 git://github.com/GeoNode/geonode.git --branch ${GEONODE_BRANCH} /usr/src/geonode
 RUN cd /usr/src/geonode/; pip install --upgrade --no-cache-dir -r requirements.txt; pip install --upgrade -e .
 
 
