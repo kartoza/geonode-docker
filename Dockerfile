@@ -1,4 +1,4 @@
-FROM python:2.7.14
+FROM python:2.7.14-stretch
 MAINTAINER GeoNode development team
 
 RUN mkdir -p /usr/src/{app,geonode}
@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
                 python-ldap \
                 libmemcached-dev libsasl2-dev zlib1g-dev \
                 python-pylibmc \
+                uwsgi uwsgi-plugin-python \
 	--no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 
@@ -29,9 +30,9 @@ RUN pip install --upgrade pip
 # To understand the next section (the need for requirements.txt and setup.py)
 # Please read: https://packaging.python.org/requirements/
 
-# python-gdal does not seem to work, let's install manually the version that is
-# compatible with the provided libgdal-dev
-RUN pip install GDAL==1.10 --global-option=build_ext --global-option="-I/usr/include/gdal"
+# python-gdal needs to be reinstalled, because we are not using python from debian distribution
+# python-gdal uses GDAL 2.1.2 but there are no python package for that, so we are using 2.1.0
+RUN pip install GDAL==2.1.0 --global-option=build_ext --global-option="-I/usr/include/gdal"
 
 # install shallow clone of geonode master branch
 ARG GEONODE_BRANCH=master
